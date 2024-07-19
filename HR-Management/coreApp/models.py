@@ -26,11 +26,16 @@ class Leave(models.Model):
 # Create your models here.
 
 class User(models.Model):
+    USER_GENDER = [
+        ('Male','Male'),
+        ('Female','Female')
+    ]
+
     username = models.CharField(max_length=50)
     fname = models.CharField(max_length=50)
     lname= models.CharField(max_length=50)
-    gender = models.CharField(max_length=50)
-    contact = models.CharField(max_length = 50)
+    gender = models.CharField(max_length=50 , choices=USER_GENDER)
+    contact = models.CharField(max_length=50)
 
 
 class Attendance(models.Model):

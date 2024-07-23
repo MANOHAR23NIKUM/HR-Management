@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drf_yasg',
+    'leaveApp',
+    'rest_framework',
+    'coreApp'
 ]
 
 MIDDLEWARE = [
@@ -129,13 +132,21 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# SWAGGER_SETTINGS = {
+#     'USE_SESSION_AUTH':False,
+#    'SECURITY_DEFINITIONS': {
+#       'Bearer': {
+#             'type': 'apiKey',
+#             'name': 'Authorization',
+#             'in': 'header'
+#       }
+#    }
+# }
+
 SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH':False,
-   'SECURITY_DEFINITIONS': {
-      'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-      }
-   }
+    'SECURITY_DEFINITIONS': {
+        'basic': {
+            'type': 'basic'
+        }
+    },
 }

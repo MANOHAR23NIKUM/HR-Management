@@ -1,176 +1,95 @@
 from django.shortcuts import render
-from coreApp.models import User
-from .serializers import Userserializer
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import APIException
+
+# Create your views here.
+from .serializers import Userserializer, RegisterSerializer
 from rest_framework.response import Response
-from rest_framework import status,parsers
+from rest_framework import generics,status
+from rest_framework import permissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 
+# Create your views here.
+# @extend_schema(auth=[])
+class RegisterUserAPIView(APIView):
+    """Create User for authentication."""
+    permission_classes = [permissions.AllowAny]
+    serializer_class = RegisterSerializer
 
-#  A ViewSet for handling CRUD operations related to leaves.
-class Userviewset(ModelViewSet):
-    queryset = User.objects.all()
+    @swagger_auto_schema(
+        request_body=RegisterSerializer,
+        query_serializer=RegisterSerializer,
+        security=[],
+    )
+    def post(self, request):
+        """Get request data & save."""
+        serializer = RegisterSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            print(serializer.errors)
+            return Response({
+                'status':status.HTTP_400_BAD_REQUEST,
+                'errors':serializer.errors,
+                'message':'Invalid data'
+            })
+
+        serializer.save()
+        return Response({
+            'status':status.HTTP_201_CREATED,
+            # 'data':serializer.data,
+            'message':'User added successfully'
+        })
+
+class ManageUserView(generics.RetrieveUpdateAPIView):
     serializer_class = Userserializer
-    parser_classes = (parsers.FormParser,parsers.MultiPartParser,parsers.FileUploadParser)
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get_serializer_class(self):
-        """
-        Returns the appropriate serializer class based on the action.
-        """
-        if self.action == 'list':
-            return Userserializer
-        elif self.action == 'create':
-            return Userserializer
-            
-        return self.serializer_class
-    
-    def list(self, request):
-        """
-        Retrieve a list of all leaves.
-        """
-        try:
-            leaves_objs = User.objects.all()
-            serializer = self.get_serializer(leaves_objs, many=True)
+    def get_object(self):
+        return self.request.user
 
+    #  get data
+    def get(self, *args):
+        user_obj = self.get_object()
+        serializer = Userserializer(user_obj)
+
+        return Response(({
+            'status':status.HTTP_200_OK,
+            'data':serializer.data
+        }))
+
+    # update data partially
+    def patch(self, request):
+        user_obj = self.get_object()
+        serializer = Userserializer(user_obj,data=request.data,partial=True)
+
+        if not serializer.is_valid():
             return Response({
-                'status': status.HTTP_200_OK,
-                'data': serializer.data
+                'status':status.HTTP_400_BAD_REQUEST,
+                'error':serializer.errors,
+                'message':'Invalid data'
             })
 
-        except Exception as e:
-            print(e)
-            raise APIException({
-                'message': APIException.default_detail,
-                'status': APIException.status_code
-            })
-        
-#add Leave
-    def create(self,request):
-        try:
-            serializer = self.get_serializer(data=request.data)
-            if not serializer.is_valid():
-                return Response({
-                    'status':status.HTTP_400_BAD_REQUEST,
-                    'data':serializer.errors,
-                    'message':'Invalid data'
-                }) 
-            serializer.save()
+        serializer.save()
+        return Response(({
+            'status':status.HTTP_200_OK,
+            'message':'User partially updated successfully'
+        }))
 
+    # update data
+    def put(self, request):
+        user_obj = self.get_object()
+        serializer = Userserializer(user_obj,data=request.data,partial=False)
+
+        if not serializer.is_valid():
             return Response({
-                'status':status.HTTP_201_CREATED,
-                'data':serializer.data,
-                'message':'User Added Successfully'
-                }) 
-        except Exception as e:
-            raise APIException({
-                'message':APIException.default_detail,
-                'status':APIException.status_code
-            }) 
-
-    def retrieve(self, request, pk=None):
-        """
-        Retrieve details of a specific leave.
-        """
-        try:
-            id = pk
-            if id is not None:
-                leaves_objs = self.get_object()
-                serializer = self.get_serializer(leaves_objs)
-
-            return Response({
-                'status': status.HTTP_200_OK,
-                'data': serializer.data
+                'status':status.HTTP_400_BAD_REQUEST,
+                'error':serializer.errors,
+                'message':'Invalid data'
             })
 
-        except Exception as e:
-            print(e)
-            raise APIException({
-                'message': APIException.default_detail,
-                'status': APIException.status_code
-            })
-
-    def update(self, request, pk=None):
-        """
-        Update all fields of a specific leave.
-        """
-        try:
-            leaves_objs = self.get_object()
-            serializer = self.get_serializer(leaves_objs, data=request.data, partial=False)
-
-            if not serializer.is_valid():
-                print(serializer.errors)
-                return Response({
-                    'status': status.HTTP_400_BAD_REQUEST,
-                    'data': serializer.errors,
-                    'message': 'Invalid data'
-                })
-            serializer.save()
-
-            return Response({
-                'status': status.HTTP_200_OK,
-                'data': serializer.data,
-                'message': 'User updated successfully'
-            })
-
-        except Exception as e:
-            print(e)
-            raise APIException({
-                'message': APIException.default_detail,
-                'status': APIException.status_code
-            })
-        
-
-    def partial_update(self, request, pk=None):
-        """
-        Partially update specific fields of a leave.
-        """
-        try:
-            leaves_objs = self.get_object()
-            serializer = self.get_serializer(leaves_objs, data=request.data, partial=True)
-
-            if not serializer.is_valid():
-                print(serializer.errors)
-                return Response({
-                    'status': status.HTTP_400_BAD_REQUEST,
-                    'data': serializer.errors,
-                    'message': 'Invalid data'
-                })
-            serializer.save()
-
-            return Response({
-                'status': status.HTTP_200_OK,
-                'data': serializer.data,
-                'message': 'User updated successfully'
-            })
-
-        except Exception as e:
-            print(e)
-            raise APIException({
-                'message': APIException.default_detail,
-                'status': APIException.status_code
-            })
-
-    def destroy(self, request, pk):
-        """
-        Delete a specific leave.
-        """
-        try:
-            id = pk
-            leaves_objs = self.get_object()
-            leaves_objs.delete()
-            return Response({
-                'status': status.HTTP_200_OK,
-                'message': 'User deleted successfully'
-            })
-
-        except Exception as e:
-            print(e)
-            raise APIException({
-                'message': APIException.default_detail,
-                'status': APIException.status_code
-            })
-                
-               
-
-
-
+        serializer.save()
+        return Response(({
+            'status':status.HTTP_200_OK,
+            'message':'User updated successfully'
+        }))

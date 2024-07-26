@@ -39,4 +39,6 @@ urlpatterns = [
     path('api/leave/',include('leaveApp.urls')),
     path('api/attendance/',include('attendance.urls')),
     path('api/user/',include('user.urls')),
+    path('api/Department/',include('department.urls')),
+    path('api/Applicant/',include('applicant.urls')),
 ]

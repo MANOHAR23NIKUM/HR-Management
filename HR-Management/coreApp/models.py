@@ -52,3 +52,30 @@ class Attendance(models.Model):
     log_out = models.TimeField(blank=True)
     status = models.CharField(max_length=50,choices=ATTENDANCE) 
      
+
+
+
+class Department(models.Model):
+    Department_name= models.CharField(max_length=50)
+    description=models.CharField(max_length=50)
+    HOD=models.CharField(max_length=50)
+
+
+
+    
+class Applicant(models.Model):
+    APPLICANT_STATUS = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+    first_name=models.CharField(max_length=50)
+    last_name=models.CharField(max_length=50)
+    email=models.EmailField(unique=True)
+    phone_number=models.CharField(max_length=50)
+    DOB=models.DateField(blank=True,null=True)
+    address=models.CharField(max_length=50)
+    applicant_date=models.DateField(null=True)
+    status=models.CharField(max_length=20,choices=APPLICANT_STATUS)
+    
+ 

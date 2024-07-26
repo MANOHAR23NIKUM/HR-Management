@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'drf_yasg',
     'leaveApp',
     'rest_framework',
-    'coreApp'
+    'coreApp',
+    'department',
+    'applicant'
 ]
 
 MIDDLEWARE = [
